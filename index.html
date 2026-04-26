@@ -97,7 +97,7 @@
     .container,
     footer,
     .lightbox,
-    .soundcloud-wrap{
+    .music-box{
       position:relative;
       z-index:1;
     }
@@ -288,6 +288,8 @@
     .program-item span{
       font-weight:700;
       color:var(--deep-sea);
+      display:block;
+      margin-bottom:8px;
     }
 
     .gallery-card{
@@ -398,6 +400,7 @@
       justify-content:center;
       align-items:center;
       padding:20px;
+      z-index:50;
     }
 
     .lightbox img{
@@ -407,17 +410,37 @@
       box-shadow:0 18px 40px rgba(0,0,0,0.22);
     }
 
-    .soundcloud-wrap{
+    .music-box{
       position:fixed;
       right:20px;
       bottom:20px;
-      width:min(420px, calc(100vw - 32px));
-      z-index:20;
-      border-radius:22px;
+      z-index:30;
+    }
+
+    #musicBtn{
+      background:var(--sun);
+      color:#000;
+      border:none;
+      padding:14px 18px;
+      border-radius:16px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 8px 20px rgba(0,0,0,0.2);
+      transition:.25s ease;
+    }
+
+    #musicBtn:hover{
+      transform:translateY(-2px);
+    }
+
+    .music-player{
+      display:none;
+      margin-top:10px;
+      width:300px;
+      border-radius:16px;
       overflow:hidden;
       box-shadow:0 12px 28px rgba(29,78,216,0.18);
-      background:rgba(255,255,255,0.82);
-      backdrop-filter:blur(10px);
+      background:rgba(255,255,255,0.9);
     }
 
     footer{
@@ -454,10 +477,13 @@
         opacity:0.16;
       }
 
-      .soundcloud-wrap{
+      .music-box{
         right:12px;
         bottom:12px;
-        width:calc(100vw - 24px);
+      }
+
+      .music-player{
+        width:min(300px, calc(100vw - 24px));
       }
     }
   </style>
@@ -537,23 +563,39 @@
       <h2>🌊 Programok</h2>
       <p>Egy hétvége, ahol minden a barátságról, a nyárról, a közös éneklésről és Flo ünnepléséről szól.</p>
       <div class="program-list">
-        <div class="program-item"><span>🍋 Welcome drink</span><p>Érkezés után frissítő koktélokkal és nyári falatokkal hangolódunk.</p></div>
-        <div class="program-item"><span>🤍 Közös fotózás</span><p>Csillogós-világos rózsaszín szettekben, mediterrán hangulatban örökítjük meg a hétvégét.</p></div>
-        <div class="program-item"><span>🎶 Esti buli</span><p>Éneklés, tánc, sok nevetés és igazi csajbuli naplementés hangulatban.</p></div>
-        <div class="program-item"><span>☀️ Másnapi brunch</span><p>Laza reggel, közös sztorizás és balatoni feltöltődés.</p></div>
+        <div class="program-item">
+          <span>🍋 Welcome drink</span>
+          <p>Érkezés után frissítő koktélokkal és nyári falatokkal hangolódunk.</p>
+        </div>
+        <div class="program-item">
+          <span>🤍 Közös fotózás</span>
+          <p>Csillogós-világos rózsaszín szettekben, mediterrán hangulatban örökítjük meg a hétvégét.</p>
+        </div>
+        <div class="program-item">
+          <span>🎶 Esti buli</span>
+          <p>Éneklés, tánc, sok nevetés és igazi csajbuli naplementés hangulatban.</p>
+        </div>
+        <div class="program-item">
+          <span>☀️ Másnapi brunch</span>
+          <p>Laza reggel, közös sztorizás és balatoni feltöltődés.</p>
+        </div>
       </div>
     </div>
 
     <div id="meghivo" class="card">
       <h2>💌 Meghívó</h2>
-      <p>Kedves Flo! Sok szeretettel meghívunk leánybúcsúdra, ami igaz nem Horvátországban, de a Balaton csodálatos településén Csopakon kerül megrendezésre. Az időpont: május 23-24-ig. Szedd össze a legszebb nyárias szettjeidet, mert a hétvégén egy igazi Mamma Mia hangulat vár rád. Napfény, zene, koktélok, közös képek és egy hétvége, amit még sokáig emlegetni fogunk.</p>
+      <p>
+        Kedves Flo! Sok szeretettel meghívunk leánybúcsúdra, ami igaz nem Horvátországban, de a Balaton csodálatos településén Csopakon kerül megrendezésre.
+        Az időpont: május 23–24. Szedd össze a legszebb nyárias szettjeidet, mert a hétvégén egy igazi Mamma Mia hangulat vár rád.
+        Napfény, zene, koktélok, közös képek és egy hétvége, amit még sokáig emlegetni fogunk.
+      </p>
     </div>
 
     <div id="galeria" class="card gallery-card">
       <h2>📸 Galéria</h2>
       <p class="gallery-lead">
         Töltsétek fel ide a közös képeket, hogy Flo leánybúcsúja után is megmaradjon ez a napfényes, mediterrán hangulat.
-        A kiválasztott képek azonnal megjelennek előnézetben, és később online mentéshez is hozzáköthető ez a rész.
+        A kiválasztott képek azonnal megjelennek előnézetben.
       </p>
 
       <div class="gallery-topbar">
@@ -569,19 +611,23 @@
       </div>
 
       <div class="gallery-grid" id="uploadedGallery">
-  <img src="mamma1.jpg" alt="Mamma Mia hangulatkép" onclick="openLightbox(this.src)">
-  <img class="featured-center" src="csopak.jpg" alt="Csopak naplemente hangulatkép" onclick="openLightbox(this.src)">
-  <img src="mamma2.jpg" alt="Mamma Mia buli hangulatkép" onclick="openLightbox(this.src)">
-</div>
+        <img src="mamma1.jpg" alt="Mamma Mia hangulatkép" onclick="openLightbox(this.src)">
+        <img src="csopak.jpg" alt="Csopak naplemente hangulatkép" onclick="openLightbox(this.src)">
+        <img src="mamma2.jpg" alt="Mamma Mia buli hangulatkép" onclick="openLightbox(this.src)">
+      </div>
 
       <div class="gallery-footer-note">
-        A böngészőben kiválasztott képek előnézetként azonnal megjelennek. Ha később szeretnétek valódi online mentést, ezt a blokkot könnyen rá lehet kötni külső tárhelyre is.
+        A böngészőben kiválasztott képek előnézetként azonnal megjelennek.
+        Ha később szeretnétek valódi online mentést, ezt a blokkot könnyen rá lehet kötni külső tárhelyre is.
       </div>
     </div>
 
     <div id="kapcsolat" class="card">
       <h2>📞 Kapcsolat</h2>
-      <p>Ha bármi kérdés van az outfitről, a részletekről vagy a szervezésről, írjatok a csapat chatbe. Egy biztos: ezen a hétvégén minden a szeretetről, a barátságról és Flo ünnepléséről szól majd.</p>
+      <p>
+        Ha bármi kérdés van az outfitről, a részletekről vagy a szervezésről, írjatok a csapat chatbe.
+        Egy biztos: ezen a hétvégén minden a szeretetről, a barátságról és Flo ünnepléséről szól majd.
+      </p>
     </div>
   </div>
 
@@ -589,16 +635,18 @@
     <img id="lightbox-img" alt="Nagyított galériakép">
   </div>
 
-  <div class="soundcloud-wrap">
-    <iframe
-      title="Mamma Mia háttérzene"
-      width="100%"
-      height="110"
-      scrolling="no"
-      frameborder="no"
-      allow="autoplay"
-      src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/user-371650973/mamma-mia&color=%231d4ed8&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false">
-    </iframe>
+  <div class="music-box">
+    <button id="musicBtn" type="button">🎵 Zene</button>
+    <div id="musicPlayer" class="music-player">
+      <iframe
+        width="100%"
+        height="110"
+        scrolling="no"
+        frameborder="no"
+        allow="autoplay"
+        src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/user-371650973/mamma-mia&auto_play=true">
+      </iframe>
+    </div>
   </div>
 
   <footer>© 2026 Flo leánybúcsú</footer>
@@ -606,11 +654,11 @@
   <script>
     const targetDate = new Date("2026-05-23T00:00:00").getTime();
 
-    function updateCountdown(){
+    function updateCountdown() {
       const now = new Date().getTime();
       const diff = targetDate - now;
 
-      if(diff <= 0){
+      if (diff <= 0) {
         document.getElementById("days").innerText = 0;
         document.getElementById("hours").innerText = 0;
         document.getElementById("minutes").innerText = 0;
@@ -627,12 +675,12 @@
     setInterval(updateCountdown, 1000);
     updateCountdown();
 
-    function openLightbox(src){
+    function openLightbox(src) {
       document.getElementById("lightbox").style.display = "flex";
       document.getElementById("lightbox-img").src = src;
     }
 
-    function closeLightbox(){
+    function closeLightbox() {
       document.getElementById("lightbox").style.display = "none";
     }
 
@@ -642,26 +690,26 @@
 
     let uploadedImageCount = 0;
 
-    function addImageToGallery(src, altText){
+    function addImageToGallery(src, altText) {
       const img = document.createElement("img");
       img.src = src;
       img.alt = altText || "Feltöltött galériakép";
-      img.onclick = function(){
+      img.onclick = function () {
         openLightbox(this.src);
       };
       uploadedGallery.prepend(img);
     }
 
-    galleryUpload.addEventListener("change", function(e){
+    galleryUpload.addEventListener("change", function (e) {
       const files = Array.from(e.target.files).filter(file => file.type.startsWith("image/"));
 
-      if(!files.length){
+      if (!files.length) {
         return;
       }
 
       files.forEach(file => {
         const reader = new FileReader();
-        reader.onload = function(event){
+        reader.onload = function (event) {
           addImageToGallery(event.target.result, file.name);
         };
         reader.readAsDataURL(file);
@@ -669,6 +717,17 @@
 
       uploadedImageCount += files.length;
       galleryEmptyState.textContent = uploadedImageCount + " új kép került hozzáadva az előnézeti galériához.";
+    });
+
+    const musicBtn = document.getElementById("musicBtn");
+    const musicPlayer = document.getElementById("musicPlayer");
+
+    musicBtn.addEventListener("click", () => {
+      if (musicPlayer.style.display === "block") {
+        musicPlayer.style.display = "none";
+      } else {
+        musicPlayer.style.display = "block";
+      }
     });
   </script>
 </body>
