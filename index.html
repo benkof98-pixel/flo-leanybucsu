@@ -241,6 +241,26 @@
       min-height: 44px;
     }
     .gallery-drive-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(37,99,235,0.22); }
+
+    .gallery-refresh-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 800;
+      letter-spacing: .6px;
+      color: var(--med-blue);
+      text-decoration: none;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(29,78,216,0.18);
+      box-shadow: 0 8px 18px rgba(29,78,216,0.08);
+      transition: .25s ease;
+      min-height: 44px;
+    }
+    .gallery-refresh-btn:hover { transform: translateY(-2px); }
+    .gallery-actions { display:flex; gap:12px; flex-wrap:wrap; }
     .gallery-upload-hint, .gallery-footer-note {
       margin-bottom: 18px;
       padding: 14px 16px;
@@ -387,16 +407,15 @@
       <h2>Galéria</h2>
       <p class="gallery-lead">Töltsétek fel ide a közös képeket, hogy Flo lánybúcsúja után is megmaradjon ez a napfényes, mediterrán hangulat.</p>
       <div class="gallery-topbar">
-        <div class="gallery-status">A képek feltöltése most egy megosztott Google Drive mappán keresztül történik. A gombra kattintva új fülön megnyílik a közös mappa.</div>
-        <a class="gallery-drive-btn" href="https://drive.google.com/drive/folders/1v7ivi9rmQU2FpgfY-QbzGbJs6Ym2C5XZ?usp=sharing" target="_blank" rel="noopener noreferrer">KÉPEK FELTÖLTÉSE DRIVE-BA</a>
+        <div class="gallery-status" id="galleryStatus">A képek a közös Google Drive mappából töltődnek be. Feltöltés után kattints a frissítés gombra, hogy megjelenjenek az előnézetben.</div>
+        <div class="gallery-actions">
+          <a class="gallery-drive-btn" href="https://drive.google.com/drive/folders/1v7ivi9rmQU2FpgfY-QbzGbJs6Ym2C5XZ?usp=sharing" target="_blank" rel="noopener noreferrer">KÉPEK FELTÖLTÉSE</a>
+          <button class="gallery-refresh-btn" id="refreshGalleryBtn" type="button">ELŐNÉZET FRISSÍTÉSE</button>
+        </div>
       </div>
-      <div class="gallery-upload-hint">Tipp: a Drive mappába feltöltött képeket mindenki ugyanott éri el. Ha szeretnétek, később ezt át lehet alakítani automatikus, oldalon belüli galériává is.</div>
-      <div class="gallery-grid" id="uploadedGallery">
-        <img src="mamma1.jpg" alt="Mamma Mia hangulatkép" onclick="openLightbox(this.src)" />
-        <img src="csopak.jpg" alt="Csopak naplemente hangulatkép" onclick="openLightbox(this.src)" />
-        <img src="mamma2.jpg" alt="Mamma Mia buli hangulatkép" onclick="openLightbox(this.src)" />
-      </div>
-      <div class="gallery-footer-note">A galéria ezen az oldalon továbbra is hangulatképeket mutat, a tényleges feltöltés pedig a közös Drive mappában történik.</div>
+      <div class="gallery-upload-hint">Fontos: ehhez a Drive mappában lévő képfájloknak megoszthatónak kell lenniük. Az oldal a mappa tartalmát egy nyilvánosan elérhető lista alapján tölti be.</div>
+      <div class="gallery-grid" id="uploadedGallery"></div>
+      <div class="gallery-footer-note">Ha egy új kép még nem látszik, várj néhány másodpercet, majd kattints az előnézet frissítésére.</div>
     </div>
 
     <div id="kapcsolat" class="card">
@@ -445,6 +464,71 @@
     function closeLightbox() {
       document.getElementById('lightbox').style.display = 'none';
     }
+
+    const galleryFolderId = '1v7ivi9rmQU2FpgfY-QbzGbJs6Ym2C5XZ';
+    const uploadedGallery = document.getElementById('uploadedGallery');
+    const galleryStatus = document.getElementById('galleryStatus');
+    const refreshGalleryBtn = document.getElementById('refreshGalleryBtn');
+
+    function createGalleryImage(src, altText) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = altText || 'Drive galériakép';
+      img.loading = 'lazy';
+      img.onclick = function() { openLightbox(this.src); };
+      return img;
+    }
+
+    async function loadDriveGallery() {
+      galleryStatus.textContent = 'Galéria frissítése folyamatban...';
+      uploadedGallery.innerHTML = '';
+      try {
+        const rssUrl = `https://drive.google.com/feeds/folder/${galleryFolderId}/contents?alt=rss&v=3`;
+        const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`);
+        if (!response.ok) throw new Error('Nem sikerült lekérni a Drive mappa tartalmát.');
+        const rssText = await response.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(rssText, 'text/xml');
+        const items = Array.from(xml.querySelectorAll('item'));
+        const images = [];
+
+        items.forEach(item => {
+          const title = item.querySelector('title')?.textContent || 'Drive kép';
+          const link = item.querySelector('link')?.textContent || '';
+          const match = link.match(/\/d\/([^/]+)/);
+          if (match) {
+            const fileId = match[1];
+            images.push({
+              title,
+              src: `https://drive.google.com/uc?export=view&id=${fileId}`
+            });
+          }
+        });
+
+        if (!images.length) {
+          galleryStatus.textContent = 'Még nem található megjeleníthető kép a Drive mappában.';
+          uploadedGallery.innerHTML = `
+            <img src="mamma1.jpg" alt="Mamma Mia hangulatkép" onclick="openLightbox(this.src)" />
+            <img src="csopak.jpg" alt="Csopak naplemente hangulatkép" onclick="openLightbox(this.src)" />
+            <img src="mamma2.jpg" alt="Mamma Mia buli hangulatkép" onclick="openLightbox(this.src)" />
+          `;
+          return;
+        }
+
+        images.forEach(image => uploadedGallery.appendChild(createGalleryImage(image.src, image.title)));
+        galleryStatus.textContent = `${images.length} kép betöltve a közös Drive mappából.`;
+      } catch (error) {
+        galleryStatus.textContent = 'A Drive-előnézet most nem érhető el. A feltöltés továbbra is működik a gombon keresztül.';
+        uploadedGallery.innerHTML = `
+          <img src="mamma1.jpg" alt="Mamma Mia hangulatkép" onclick="openLightbox(this.src)" />
+          <img src="csopak.jpg" alt="Csopak naplemente hangulatkép" onclick="openLightbox(this.src)" />
+          <img src="mamma2.jpg" alt="Mamma Mia buli hangulatkép" onclick="openLightbox(this.src)" />
+        `;
+      }
+    }
+
+    refreshGalleryBtn.addEventListener('click', loadDriveGallery);
+    loadDriveGallery();
 
     const musicBtn = document.getElementById('musicBtn');
     const musicPlayer = document.getElementById('musicPlayer');
